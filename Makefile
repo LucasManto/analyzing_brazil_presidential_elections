@@ -25,9 +25,18 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+## Make brazil complete dataset: result of joining states raw data by year
+brazil_data: requirements
+	$(PYTHON_INTERPRETER) src/data/1_make_brazil_dataset.py
+
+## Make presidential dataset: result of filtering brazil dataset to retrieve
+## only presidential votes
+presidential_data: brazil_data
+	$(PYTHON_INTERPRETER) src/data/2_make_presidential_dataset.py
+
+## Make final dataset without interims
+data:
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 ## Delete all compiled Python files
 clean:
