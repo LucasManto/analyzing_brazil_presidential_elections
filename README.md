@@ -1,10 +1,8 @@
-Analyzing Brazil Presidential Elections
-==============================
+# Analyzing Brazil Presidential Elections
 
-This work aims to use eletoral data as well as census data to evaluate the existence of space-time pattterns on brazilians presidential elections
+This work aims to use eletoral data as well as census data to evaluate the existence of space-time patterns on brazilian presidential elections from 1994 to 2018
 
-Project Organization
-------------
+## Project Organization
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -51,7 +49,6 @@ Project Organization
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
-
---------
+---
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
