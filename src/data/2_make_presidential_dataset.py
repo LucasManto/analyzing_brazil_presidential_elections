@@ -6,12 +6,15 @@ from pandas import read_csv
 
 
 def make_presidential_dataset():
+    logger = logging.getLogger(__name__)
+
     years = [1994, 1998, 2002, 2006, 2010, 2014, 2018]
 
     interim_dir = Path(data_dir, 'interim').resolve()
     elections_1994_1998_dir = Path(
         interim_dir, 'brazil').resolve()
     for year in years:
+        logger.info('starting to filter {} data'.format(year))
         file_path = Path(elections_1994_1998_dir,
                          str(year), 'br.csv').resolve()
         data = read_csv(file_path)
@@ -25,6 +28,7 @@ def make_presidential_dataset():
 
         file_path = Path(year_dir, 'presidential.csv').resolve()
         presidential.to_csv(file_path, index=None)
+        logger.info('finished filtering {} data'.format(year))
 
 
 def main():

@@ -27,6 +27,8 @@ def create_br_dataset(year, metadata):
 
 
 def make_br_dataset():
+    logger = logging.getLogger(__name__)
+
     pre_2012_columns = ['data_geracao', 'hora_geracao', 'ano_eleicao', 'num_turno', 'descricao_eleicao', 'sigla_uf', 'sigla_ue', 'cod_mun', 'nome_mun', 'num_zona', 'cod_cargo', 'desc_cargo',
                         'tipo_legenda', 'nome_coligacao', 'composicao_legenda', 'sigla_partido', 'num_partido', 'nome_partido', 'qtde_votos_nominais', 'qtde_votos_legenda', 'sequencial_coligacao']
     post_2012_columns = ['data_geracao', 'hora_geracao', 'ano_eleicao', 'cod_tipo_eleicao', 'nome_eleicao', 'num_turno', 'cod_eleicao', 'descricao_eleicao', 'data_eleicao', 'tipo_abrangencia', 'sigla_uf', 'sigla_ue', 'nome_ue', 'cod_mun',
@@ -74,6 +76,7 @@ def make_br_dataset():
         data_dir, 'interim', 'brazil').resolve()
     elections_1994_2018_dir.mkdir(exist_ok=True)
     for year in metadata_by_year:
+        logger.info('starting to join {} data'.format(year))
         year_dir = Path(elections_1994_2018_dir, str(year))
         year_dir.mkdir(exist_ok=True)
         destination_path = Path(
@@ -82,6 +85,7 @@ def make_br_dataset():
         )
         br_dataset = create_br_dataset(year, metadata_by_year[year])
         br_dataset.to_csv(destination_path, index=None)
+        logger.info('finished joining {} data'.format(year))
 
 
 def main():
