@@ -34,6 +34,15 @@ brazil_data: requirements
 presidential_data: brazil_data
 	$(PYTHON_INTERPRETER) src/data/2_make_presidential_dataset.py
 
+# Make dataset with 1st turn votes and only regular votes: no transit votes, no
+# outside Brazil votes.
+first_turn_data: presidential_data
+	$(PYTHON_INTERPRETER) src/data/3_make_first_turn_dataset.py
+
+# Make percentual votes dataset
+percentual_data: first_turn_data
+	$(PYTHON_INTERPRETER) src/data/4_make_percentual_dataset.py
+
 ## Make final dataset without interims
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
