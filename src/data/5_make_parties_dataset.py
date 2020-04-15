@@ -55,6 +55,7 @@ def make_parties_dataset():
 
             file_path = Path(party_dir, 'party.csv').resolve()
             party_data = data[data.sigla_partido == party]
+            party_data = party_data[['cod_mun', 'percentual_votos']]
             party_data.to_csv(file_path, index=None)
 
             logger.info(
