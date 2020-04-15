@@ -43,6 +43,10 @@ first_turn_data: presidential_data
 percentual_data: first_turn_data
 	$(PYTHON_INTERPRETER) src/data/4_make_percentual_dataset.py
 
+# Make datasets of chosen parties
+parties_data: percentual_data
+	$(PYTHON_INTERPRETER) src/data/5_make_parties_dataset.py
+
 ## Make final dataset without interims
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
