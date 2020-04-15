@@ -25,7 +25,7 @@ def make_percentual_dataset():
             city_nominal_votes = percentual.loc[city_rows,
                                                 'qtde_votos_nominais']
 
-            percentual.loc[city_rows, 'percentual_votes'] = city_nominal_votes / \
+            percentual.loc[city_rows, 'percentual_votos'] = city_nominal_votes / \
                 city_nominal_votes.sum()
 
         percentual_dir = Path(interim_dir, 'percentual').resolve()
