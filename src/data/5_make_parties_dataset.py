@@ -8,28 +8,48 @@ from pandas import read_csv
 def make_parties_dataset():
     logger = logging.getLogger(__name__)
 
-    years = [1994, 1998, 2002, 2006, 2010, 2014, 2018]
     metadata_by_year = {
         1994: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         1998: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         2002: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         2006: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         2010: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         2014: {
-            'parties': ['PT', 'PSDB']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSDB', 'dir': 'PSDB'}
+            ]
         },
         2018: {
-            'parties': ['PT', 'PSL']
+            'parties': [
+                {'name': 'PT', 'dir': 'PT'},
+                {'name': 'PSL', 'dir': 'PSDB'}
+            ]
         },
     }
 
@@ -48,18 +68,18 @@ def make_parties_dataset():
         data = read_csv(file_path)
         for party in metadata_by_year[year]['parties']:
             logger.info(
-                'starting to filter {} data from {}'.format(year, party))
+                'starting to filter {} data from {}'.format(year, party['name']))
 
-            party_dir = Path(year_dir, party).resolve()
+            party_dir = Path(year_dir, party['dir']).resolve()
             party_dir.mkdir(exist_ok=True)
 
             file_path = Path(party_dir, 'party.csv').resolve()
-            party_data = data[data.sigla_partido == party]
+            party_data = data[data.sigla_partido == party['name']]
             party_data = party_data[['cod_mun', 'percentual_votos']]
             party_data.to_csv(file_path, index=None)
 
             logger.info(
-                'finished filtering {} data from {}'.format(year, party))
+                'finished filtering {} data from {}'.format(year, party['name']))
 
         logger.info('finished filtering {} data'.format(year))
 

@@ -48,9 +48,8 @@ parties_data: percentual_data
 	$(PYTHON_INTERPRETER) src/data/5_make_parties_dataset.py
 
 # Make series data joining years data by party
-# series_data: parties_data
-series_data:
-	$(PYTHON_INTERPRETER) src/data/5_make_parties_dataset.py
+series_data: parties_data
+	$(PYTHON_INTERPRETER) src/data/6_make_series_dataset.py
 
 ## Make final dataset without interims
 data:
