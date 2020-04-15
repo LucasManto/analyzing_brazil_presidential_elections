@@ -20,6 +20,7 @@ def make_series_dataset():
         logger.info('starting to join {} data'.format(party))
         file_path = Path(parties_dir, '1994', party, 'party.csv').resolve()
         dataset = read_csv(file_path, index_col=0)
+        dataset = dataset.groupby('cod_mun').sum()
 
         for year in years[1:]:
             logger.info('starting to join {} data'.format(year))
