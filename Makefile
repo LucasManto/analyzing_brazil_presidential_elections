@@ -31,23 +31,23 @@ brazil_data: requirements
 
 ## Make presidential dataset: result of filtering brazil dataset to retrieve
 ## only presidential votes
-presidential_data: brazil_data
+presidential_data:
 	$(PYTHON_INTERPRETER) src/data/2_make_presidential_dataset.py
 
-# Make dataset with 1st turn votes and only regular votes: no transit votes, no
-# outside Brazil votes.
+## Make dataset with 1st turn votes and only regular votes: no transit votes, no
+## outside Brazil votes.
 first_turn_data: presidential_data
 	$(PYTHON_INTERPRETER) src/data/3_make_first_turn_dataset.py
 
-# Make percentual votes dataset
+## Make percentual votes dataset
 percentual_data: first_turn_data
 	$(PYTHON_INTERPRETER) src/data/4_make_percentual_dataset.py
 
-# Make datasets of chosen parties with cod_mun and percentual_votos columns
+## Make datasets of chosen parties with cod_mun and percentual_votos columns
 parties_data: percentual_data
 	$(PYTHON_INTERPRETER) src/data/5_make_parties_dataset.py
 
-# Make series data joining years data by party
+## Make series data joining years data by party
 series_data: parties_data
 	$(PYTHON_INTERPRETER) src/data/6_make_series_dataset.py
 

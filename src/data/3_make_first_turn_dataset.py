@@ -10,6 +10,11 @@ def make_first_turn_dataset():
 
     years = [1994, 1998, 2002, 2006, 2010, 2014, 2018]
 
+    correspondence_path = Path(
+        data_dir, 'external', 'tse-ibge-correspondence.csv').resolve()
+    correspondence = read_csv(correspondence_path)
+    tse_codes = correspondence.COD_TSE
+
     interim_dir = Path(data_dir, 'interim').resolve()
     presidential_dir = Path(interim_dir, 'presidential').resolve()
     for year in years:
@@ -26,6 +31,7 @@ def make_first_turn_dataset():
         drop_indexes = first_turn[(first_turn.sigla_uf == 'ZZ') |
                                   (first_turn.sigla_uf == 'VT')].index
         first_turn.drop(drop_indexes, inplace=True)
+        first_turn = first_turn[first_turn.cod_mun.isin(tse_codes)]
 
         first_turn_dir = Path(interim_dir, 'first_turn').resolve()
         first_turn_dir.mkdir(exist_ok=True)
