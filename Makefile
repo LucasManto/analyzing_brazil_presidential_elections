@@ -31,7 +31,7 @@ brazil_data: requirements
 
 ## Make presidential dataset: result of filtering brazil dataset to retrieve
 ## only presidential votes
-presidential_data:
+presidential_data: brazil_data
 	$(PYTHON_INTERPRETER) src/data/2_make_presidential_dataset.py
 
 ## Make dataset with 1st turn votes and only regular votes: no transit votes, no
@@ -48,8 +48,12 @@ parties_data: percentual_data
 	$(PYTHON_INTERPRETER) src/data/5_make_parties_dataset.py
 
 ## Make series data joining years data by party
-series_data: parties_data
+series_data:
 	$(PYTHON_INTERPRETER) src/data/6_make_series_dataset.py
+
+## Make latlon data joining series and latlon data
+latlon_data:
+	$(PYTHON_INTERPRETER) src/data/7_make_series_latlon_dataset.py
 
 ## Make final dataset without interims
 data:
