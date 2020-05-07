@@ -52,8 +52,20 @@ series_data: parties_data
 	$(PYTHON_INTERPRETER) src/data/6_make_series_dataset.py
 
 ## Make latlon data joining series and latlon data
-latlon_data:
+latlon_data: series_data
 	$(PYTHON_INTERPRETER) src/data/7_make_series_latlon_dataset.py
+
+## Normalize series_latlon using data
+normalized_latlon_data: latlon_data
+	$(PYTHON_INTERPRETER) src/data/8_1_make_normalized_latlon_dataset.py
+
+## Normalize series_latlon using EPSG:4674
+epsg_4674_latlon_data: latlon_data
+	$(PYTHON_INTERPRETER) src/data/8_2_make_epsg_4674_latlon_dataset.py
+
+## Normalize series_latlon using EPSG:4326
+epsg_4326_latlon_data: latlon_data
+	$(PYTHON_INTERPRETER) src/data/8_3_make_epsg_4326_latlon_dataset.py
 
 ## Make final dataset without interims
 data:
