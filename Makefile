@@ -71,6 +71,9 @@ epsg_4326_latlon_data: latlon_data
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
+profile:
+	$(PYTHON_INTERPRETER) src/data/make_profile_dataset.py
+
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
