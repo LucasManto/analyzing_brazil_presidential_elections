@@ -67,6 +67,10 @@ epsg_4674_latlon_data: latlon_data
 epsg_4326_latlon_data: latlon_data
 	$(PYTHON_INTERPRETER) src/data/8_3_make_epsg_4326_latlon_dataset.py
 
+## Make Moran's Index dataset
+moran: series_data
+	$(PYTHON_INTERPRETER) src/data/9_make_moran_dataset.py
+
 ## Make final dataset without interims
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
