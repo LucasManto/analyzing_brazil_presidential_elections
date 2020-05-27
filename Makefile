@@ -74,6 +74,9 @@ data:
 profile:
 	$(PYTHON_INTERPRETER) src/data/make_profile_dataset.py
 
+single_profile: profile
+	$(PYTHON_INTERPRETER) src/data/make_single_profile_dataset.py
+
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
