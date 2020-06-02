@@ -75,6 +75,10 @@ moran: series_data
 moran_plots: moran
 	$(PYTHON_INTERPRETER) src/data/10_make_moran_plots.py
 
+## Make hierarchical clustering
+cluster_data: normalized_latlon_data epsg_4674_latlon_data epsg_4326_latlon_data
+	$(PYTHON_INTERPRETER) src/data/11_make_cluster_datasets.py
+
 ## Make final dataset without interims
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
