@@ -12,5 +12,7 @@ python-dotenv>=0.5.1
 # project requirements
 pandas
 geopandas
+descartes
 libpysal
 esda
+splot
