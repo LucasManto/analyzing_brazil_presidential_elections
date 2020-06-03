@@ -16,3 +16,4 @@ descartes
 libpysal
 esda
 splot
+scipy

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pandas import read_csv, concat, Series
 
-from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import fclusterdata
 
 
 def make_cluster_dataset():
@@ -40,7 +40,7 @@ def make_cluster_dataset():
         }
     }
 
-    n_clusters_values = [3, 5, 27]
+    n_clusters_values = [3, 5, 10]
     for data_type, metadata in metadata_by_type.items():
         data_type_dir = Path(cluster_dir, data_type).resolve()
         data_type_dir.mkdir(exist_ok=True)
@@ -49,19 +49,17 @@ def make_cluster_dataset():
             party_dir = Path(data_type_dir, party).resolve()
             party_dir.mkdir(exist_ok=True)
 
+            file_path = Path(metadata['dir'], party,
+                             metadata['file_name']).resolve()
+            dataset = read_csv(file_path)
+
             for n_clusters in n_clusters_values:
-                model = AgglomerativeClustering(
-                    n_clusters=n_clusters, affinity='euclidean', linkage='ward')
 
                 logger.info(
                     f'starting to create {party} {n_clusters} cluster data with {data_type} data')
 
-                file_path = Path(metadata['dir'], party,
-                                 metadata['file_name']).resolve()
-                dataset = read_csv(file_path)
-
-                labels = model.fit_predict(
-                    dataset.drop(columns=['cod_mun']).values)
+                labels = fclusterdata(dataset.drop(columns='cod_mun'), n_clusters,
+                                      criterion='maxclust', method='ward')
                 labels = Series(labels)
                 labels.name = 'cluster'
 
