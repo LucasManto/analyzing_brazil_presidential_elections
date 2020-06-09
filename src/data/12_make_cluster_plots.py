@@ -84,7 +84,7 @@ def make_cluster_dataset():
                 dataset = dataset.rename(columns={'cod_mun': 'COD_TSE'})
 
                 merged_mesh = mesh.merge(dataset, on='COD_TSE')
-                merged_mesh.plot(column='cluster', cmap='YlGnBu', legend=True, categorical=True, legend_kwds={
+                merged_mesh.plot(column='cluster', cmap='tab10', legend=True, categorical=True, legend_kwds={
                                  'loc': 'lower right'})
                 plt.axis(False)
 
