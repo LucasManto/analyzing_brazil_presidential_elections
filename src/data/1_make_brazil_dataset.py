@@ -18,7 +18,8 @@ def create_br_dataset(year, metadata):
             'votacao_partido_munzona_{}_{}.{}'.format(
                 year, state, metadata['file_extension'])
         ).resolve()
-        uf = read_csv(file_path, sep=';', encoding='latin', header=None)
+        uf = read_csv(file_path, sep=';', encoding='latin',
+                      header=metadata['header'])
         br = concat([br, uf])
 
     br.columns = metadata['columns']
@@ -38,37 +39,44 @@ def make_br_dataset():
         1994: {
             'states': ['AC', 'AL', 'AM', 'AP', 'BA', 'GO', 'MA', 'MS', 'PI', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'],
             'columns': pre_2012_columns,
-            'file_extension': 'txt'
+            'file_extension': 'txt',
+            'header': None
         },
         1998: {
             'states': ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'],
             'columns': pre_2012_columns,
-            'file_extension': 'txt'
+            'file_extension': 'txt',
+            'header': None
         },
         2002: {
             'states': ['BR'],
             'columns': pre_2012_columns,
-            'file_extension': 'txt'
+            'file_extension': 'txt',
+            'header': None
         },
         2006: {
             'states': ['BR'],
             'columns': pre_2012_columns,
-            'file_extension': 'txt'
+            'file_extension': 'txt',
+            'header': None
         },
         2010: {
             'states': ['BR'],
             'columns': pre_2012_columns,
-            'file_extension': 'txt'
+            'file_extension': 'txt',
+            'header': None
         },
         2014: {
-            'states': ['BRASIL'],
+            'states': ['BR'],
             'columns': post_2012_columns,
-            'file_extension': 'csv'
+            'file_extension': 'csv',
+            'header': 0
         },
         2018: {
-            'states': ['BRASIL'],
+            'states': ['BR'],
             'columns': post_2012_columns,
-            'file_extension': 'csv'
+            'file_extension': 'csv',
+            'header': 0
         },
     }
 

@@ -28,10 +28,10 @@ def make_first_turn_dataset():
         first_turn = data[data.num_turno == 1]
 
         # Removing votes in transit or outside Brazil
-        drop_indexes = first_turn[(first_turn.sigla_uf == 'ZZ') |
-                                  (first_turn.sigla_uf == 'VT')].index
-        first_turn.drop(drop_indexes, inplace=True)
-        first_turn = first_turn[first_turn.cod_mun.isin(tse_codes)]
+        first_turn_brazil = first_turn[(first_turn.sigla_uf != 'ZZ') &
+                                       (first_turn.sigla_uf != 'VT')]
+        first_turn_brazil = first_turn_brazil[first_turn_brazil.cod_mun.isin(
+            tse_codes)]
 
         first_turn_dir = Path(interim_dir, 'first_turn').resolve()
         first_turn_dir.mkdir(exist_ok=True)
@@ -39,7 +39,7 @@ def make_first_turn_dataset():
         year_dir.mkdir(exist_ok=True)
 
         file_path = Path(year_dir, 'first_turn.csv').resolve()
-        first_turn.to_csv(file_path, index=None)
+        first_turn_brazil.to_csv(file_path, index=None)
         logger.info('finished filtering {} data'.format(year))
 
 

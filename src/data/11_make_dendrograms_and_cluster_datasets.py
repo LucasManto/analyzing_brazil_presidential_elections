@@ -4,10 +4,38 @@ from pathlib import Path
 
 from pandas import read_csv, concat, Series
 
-from scipy.cluster.hierarchy import fclusterdata
+from matplotlib import pyplot as plt
+
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 
 
-def make_cluster_dataset():
+# Code from https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/
+def fancy_dendrogram(*args, **kwargs):
+    max_d = kwargs.pop('max_d', None)
+    if max_d and 'color_threshold' not in kwargs:
+        kwargs['color_threshold'] = max_d
+    annotate_above = kwargs.pop('annotate_above', 0)
+
+    ddata = dendrogram(*args, **kwargs)
+
+    if not kwargs.get('no_plot', False):
+        plt.title('Hierarchical Clustering Dendrogram (truncated)')
+        plt.xlabel('sample index or (cluster size)')
+        plt.ylabel('distance')
+        for i, d, c in zip(ddata['icoord'], ddata['dcoord'], ddata['color_list']):
+            x = 0.5 * sum(i[1:3])
+            y = d[1]
+            if y > annotate_above:
+                plt.plot(x, y, 'o', c=c)
+                plt.annotate("%.3g" % y, (x, y), xytext=(0, -5),
+                             textcoords='offset points',
+                             va='top', ha='center')
+        if max_d:
+            plt.axhline(y=max_d, c='k')
+    return ddata
+
+
+def make_dendrograms_and_cluster_datasets():
     logger = logging.getLogger(__name__)
 
     parties = ['PT', 'PSDB']
@@ -20,6 +48,9 @@ def make_cluster_dataset():
     epsg_4674_dir = Path(processed_dir, 'epsg_4674').resolve()
     cluster_dir = Path(processed_dir, 'cluster').resolve()
     cluster_dir.mkdir(exist_ok=True)
+
+    dendrogram_dir = Path(reports_dir, 'dendrogram').resolve()
+    dendrogram_dir.mkdir(exist_ok=True)
 
     metadata_by_type = {
         'series': {
@@ -45,6 +76,9 @@ def make_cluster_dataset():
         data_type_dir = Path(cluster_dir, data_type).resolve()
         data_type_dir.mkdir(exist_ok=True)
 
+        dendrogram_data_type_dir = Path(dendrogram_dir, data_type).resolve()
+        dendrogram_data_type_dir.mkdir(exist_ok=True)
+
         for party in parties:
             party_dir = Path(data_type_dir, party).resolve()
             party_dir.mkdir(exist_ok=True)
@@ -53,13 +87,35 @@ def make_cluster_dataset():
                              metadata['file_name']).resolve()
             dataset = read_csv(file_path)
 
+            links = linkage(dataset.drop(columns='cod_mun'), method='ward')
+
+            dendrogram_party_dir = Path(
+                dendrogram_data_type_dir, party).resolve()
+            dendrogram_party_dir.mkdir(exist_ok=True)
+
+            dendrogram_filepath = Path(
+                dendrogram_party_dir, 'dendrogram.pdf').resolve()
+
+            plt.figure()
+            fancy_dendrogram(
+                links,
+                truncate_mode='lastp',
+                p=12,
+                leaf_rotation=90.,
+                leaf_font_size=12.,
+                show_contracted=True,
+                annotate_above=10,
+            )
+            plt.savefig(dendrogram_filepath)
+            plt.close()
+
             for n_clusters in n_clusters_values:
 
                 logger.info(
                     f'starting to create {party} {n_clusters} cluster data with {data_type} data')
 
-                labels = fclusterdata(dataset.drop(columns='cod_mun'), n_clusters,
-                                      criterion='maxclust', method='ward')
+                labels = fcluster(links, n_clusters,
+                                  criterion='maxclust')
                 labels = Series(labels)
                 labels.name = 'cluster'
 
@@ -85,7 +141,7 @@ def main():
 
     logger.info(
         'creating cluster data... Saving at ../data/processed/cluster')
-    make_cluster_dataset()
+    make_dendrograms_and_cluster_datasets()
     logger.info(
         'done creating cluster data... Saved at ../data/processed/cluster')
 
@@ -96,5 +152,6 @@ if __name__ == '__main__':
 
     project_dir = Path(__file__).resolve().parents[2]
     data_dir = Path(project_dir, 'data').resolve()
+    reports_dir = Path(project_dir, 'reports').resolve()
 
     main()

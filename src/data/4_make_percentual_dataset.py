@@ -18,15 +18,13 @@ def make_percentual_dataset():
                          str(year), 'first_turn.csv').resolve()
         data = read_csv(file_path)
 
-        percentual = data.copy()
-        percentual['percentual_votos'] = 0
-        for city in percentual.nome_mun.unique():
-            city_rows = percentual[percentual.nome_mun == city].index
-            city_nominal_votes = percentual.loc[city_rows,
-                                                'qtde_votos_nominais']
-
-            percentual.loc[city_rows, 'percentual_votos'] = city_nominal_votes / \
-                city_nominal_votes.sum()
+        city_group = data.groupby('cod_mun')
+        party_group = data.groupby(['cod_mun', 'sigla_partido'])
+        party_group_agg = party_group.agg({'qtde_votos_nominais': sum})
+        city_group_agg = city_group.agg({'qtde_votos_nominais': sum})
+        percentual = party_group_agg / city_group_agg
+        percentual = percentual.rename(
+            columns={'qtde_votos_nominais': 'percentual_votos'})
 
         percentual_dir = Path(interim_dir, 'percentual').resolve()
         percentual_dir.mkdir(exist_ok=True)
@@ -34,7 +32,7 @@ def make_percentual_dataset():
         year_dir.mkdir(exist_ok=True)
 
         file_path = Path(year_dir, 'percentual.csv').resolve()
-        percentual.to_csv(file_path, index=None)
+        percentual.to_csv(file_path)
         logger.info('finished transforming {} data'.format(year))
 
 
