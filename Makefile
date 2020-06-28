@@ -69,19 +69,15 @@ epsg_4326_latlon_data: latlon_data
 
 ## Make Moran's Index dataset
 moran: series_data
-	$(PYTHON_INTERPRETER) src/data/9_make_moran_datasets.py
-
-## Make Moran's Index plots
-moran_plots: moran
-	$(PYTHON_INTERPRETER) src/data/10_make_moran_plots.py
+	$(PYTHON_INTERPRETER) src/data/9_make_moran_datasets_and_plots.py
 
 ## Make hierarchical clustering
 cluster_data: normalized_latlon_data epsg_4674_latlon_data epsg_4326_latlon_data
-	$(PYTHON_INTERPRETER) src/data/11_make_dendrograms_and_cluster_datasets.py
+	$(PYTHON_INTERPRETER) src/data/10_make_dendrograms_and_cluster_datasets.py
 
 ## Make plots using hierarchical clustering
 cluster_plots: cluster_data
-	$(PYTHON_INTERPRETER) src/data/12_make_cluster_plots.py
+	$(PYTHON_INTERPRETER) src/data/11_make_cluster_plots.py
 
 ## Make final dataset without interims
 data:

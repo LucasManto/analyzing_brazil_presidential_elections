@@ -2,27 +2,24 @@
 import logging
 from pathlib import Path
 
-from pandas import read_csv
+from pandas import read_csv, Series
 from geopandas import read_file
 
-from libpysal.weights import Queen
+from libpysal.weights import DistanceBand
 from esda import Moran, Moran_Local
 
 from splot.esda import plot_moran, plot_local_autocorrelation
 import matplotlib.pyplot as plt
 
-from pickle import load
 
-
-def make_moran_plots():
+def make_moran_datasets_and_plots():
     logger = logging.getLogger(__name__)
 
     parties = ['PT', 'PSDB']
 
-    processed_dir = Path(data_dir, 'processed').resolve()
+    interim_dir = Path(data_dir, 'interim').resolve()
     external_dir = Path(data_dir, 'external').resolve()
-    series_dir = Path(data_dir, 'interim', 'series').resolve()
-    moran_dir = Path(processed_dir, 'moran').resolve()
+    series_dir = Path(interim_dir, 'series').resolve()
 
     mesh_path = Path(external_dir, 'cities.json')
     correspondence_path = Path(external_dir, 'tse-ibge-correspondence.csv')
@@ -34,7 +31,16 @@ def make_moran_plots():
     mesh = mesh.set_index('COD_TSE')
     mesh = mesh.sort_index()
 
+    logger.info('starting to calculate weights...')
+    weights = DistanceBand.from_dataframe(
+        mesh, threshold=None, build_sp=False, binary=False)
+    logger.info(
+        f'done calculating weights')
+
     years = [1994, 1998, 2002, 2006, 2010, 2014, 2018]
+
+    moran_dir = Path(data_dir, 'processed', 'moran').resolve()
+    moran_dir.mkdir(exist_ok=True)
 
     moran_plots_dir = Path(reports_dir, 'moran').resolve()
     moran_plots_dir.mkdir(exist_ok=True)
@@ -48,10 +54,6 @@ def make_moran_plots():
 
         party_dir = Path(moran_dir, party).resolve()
         party_dir.mkdir(exist_ok=True)
-        global_dir = Path(party_dir, 'global').resolve()
-        global_dir.mkdir(exist_ok=True)
-        local_dir = Path(party_dir, 'local').resolve()
-        local_dir.mkdir(exist_ok=True)
 
         plots_party_dir = Path(moran_plots_dir, party).resolve()
         plots_party_dir.mkdir(exist_ok=True)
@@ -63,15 +65,15 @@ def make_moran_plots():
         dataset.columns = years
         merged_mesh = mesh.merge(dataset, on='COD_TSE')
 
-        for year in years:
-            year_dir = Path(global_dir, str(year)).resolve()
-            logger.info(
-                'starting to make global moran\'s plot for {} at {}'.format(party, year))
+        p_values = []
 
-            file_path = Path(year_dir, 'global.m').resolve()
-            moran = None
-            with open(file_path, 'rb') as moran_file:
-                moran = load(moran_file)
+        for year in years:
+
+            logger.info(
+                'starting to calculate global moran\'s index for {} at {}'.format(party, year))
+
+            moran = Moran(merged_mesh[year], weights)
+            p_values.append(moran.p_sim)
 
             fig, _ = plot_moran(moran, zstandard=True, figsize=(10, 4))
             fig.suptitle(f'{party}, {year}')
@@ -83,16 +85,12 @@ def make_moran_plots():
             plt.close(fig)
 
             logger.info(
-                'done making global moran\'s plot for {} at {}'.format(party, year))
+                'done calculating global moran\'s index for {} at {}'.format(party, year))
 
-            year_dir = Path(local_dir, str(year)).resolve()
             logger.info(
-                'starting to make local moran\'s plot for {} at {}'.format(party, year))
+                'starting to calculate local moran\'s index for {} at {}'.format(party, year))
 
-            file_path = Path(year_dir, 'local.m').resolve()
-            local_moran = None
-            with open(file_path, 'rb') as local_moran_file:
-                local_moran = load(local_moran_file)
+            local_moran = Moran_Local(merged_mesh[year], weights)
 
             fig, _ = plot_local_autocorrelation(local_moran, merged_mesh, year)
             fig.suptitle(f'{party}, {year}')
@@ -104,20 +102,24 @@ def make_moran_plots():
             plt.close(fig)
 
             logger.info(
-                'done making local moran\'s plot for {} at {}'.format(party, year))
+                'done calculating local moran\'s index for {} at {}'.format(party, year))
+
+        p_value_path = Path(party_dir, 'p_values.csv')
+        p_value_series = Series(p_values, years, name='p_value')
+        p_value_series.to_csv(p_value_path, index=False)
 
 
 def main():
-    """ Runs data processing scripts to turn brazil voting data from (../processed) into
-        presidential data (saved in ../processed/presidential).
+    """ Runs data processing scripts to turn brazil voting data from (../interim) into
+        presidential data (saved in ../interim/presidential).
     """
     logger = logging.getLogger(__name__)
 
     logger.info(
-        'using moran data to make moran plots... Saving at ../reports/moran')
-    make_moran_plots()
+        'using series data to make moran dataset... Saving at ../reports/moran')
+    make_moran_datasets_and_plots()
     logger.info(
-        'done making moran plots... Saved at ../reports/moran')
+        'done making moran dataset... Saved at ../reports/moran')
 
 
 if __name__ == '__main__':

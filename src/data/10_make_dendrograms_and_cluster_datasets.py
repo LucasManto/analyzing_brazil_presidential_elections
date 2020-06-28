@@ -2,11 +2,13 @@
 import logging
 from pathlib import Path
 
-from pandas import read_csv, concat, Series
+from pandas import read_csv, concat, Series, DataFrame
 
 from matplotlib import pyplot as plt
 
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 
 # Code from https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/
@@ -52,6 +54,15 @@ def make_dendrograms_and_cluster_datasets():
     dendrogram_dir = Path(reports_dir, 'dendrogram').resolve()
     dendrogram_dir.mkdir(exist_ok=True)
 
+    metrics_dir = Path(processed_dir, 'metrics').resolve()
+    metrics_dir.mkdir(exist_ok=True)
+
+    metrics_metadata = {
+        'silhouette': silhouette_score,
+        'calinski_harabasz': calinski_harabasz_score,
+        'davies_bouldin': davies_bouldin_score
+    }
+
     metadata_by_type = {
         'series': {
             'dir': series_dir,
@@ -78,6 +89,9 @@ def make_dendrograms_and_cluster_datasets():
 
         dendrogram_data_type_dir = Path(dendrogram_dir, data_type).resolve()
         dendrogram_data_type_dir.mkdir(exist_ok=True)
+
+        metrics_data_type_dir = Path(metrics_dir, data_type).resolve()
+        metrics_data_type_dir.mkdir(exist_ok=True)
 
         for party in parties:
             party_dir = Path(data_type_dir, party).resolve()
@@ -109,6 +123,15 @@ def make_dendrograms_and_cluster_datasets():
             plt.savefig(dendrogram_filepath)
             plt.close()
 
+            metrics_party_dir = Path(
+                metrics_data_type_dir, party).resolve()
+            metrics_party_dir.mkdir(exist_ok=True)
+
+            metrics_filepath = Path(
+                metrics_party_dir, 'metrics.csv').resolve()
+
+            metrics_frame = DataFrame()
+
             for n_clusters in n_clusters_values:
 
                 logger.info(
@@ -129,8 +152,22 @@ def make_dendrograms_and_cluster_datasets():
 
                 cluster_dataset.to_csv(file_path, index=False)
 
+                scores = []
+                for _, function in metrics_metadata.items():
+                    score = function(dataset.drop(columns='cod_mun'), labels)
+                    scores.append(score)
+
+                scores = Series(scores)
+                scores.name = str(n_clusters)
+
+                metrics_frame = metrics_frame.append(scores)
+
                 logger.info(
                     f'done creating {party} {n_clusters} cluster data')
+
+            metrics_frame.columns = metrics_metadata.keys()
+            metrics_frame.index.name = 'n_clusters'
+            metrics_frame.to_csv(metrics_filepath)
 
 
 def main():
