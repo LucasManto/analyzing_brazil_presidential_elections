@@ -2,10 +2,10 @@
 import logging
 from pathlib import Path
 
-from pandas import read_csv, Series
+from pandas import read_csv, DataFrame
 from geopandas import read_file
 
-from libpysal.weights import DistanceBand
+from libpysal.weights import Queen
 from esda import Moran, Moran_Local
 
 from splot.esda import plot_moran, plot_local_autocorrelation
@@ -32,8 +32,7 @@ def make_moran_datasets_and_plots():
     mesh = mesh.sort_index()
 
     logger.info('starting to calculate weights...')
-    weights = DistanceBand.from_dataframe(
-        mesh, threshold=None, build_sp=False, binary=False)
+    weights = Queen.from_dataframe(mesh)
     logger.info(
         f'done calculating weights')
 
@@ -65,6 +64,7 @@ def make_moran_datasets_and_plots():
         dataset.columns = years
         merged_mesh = mesh.merge(dataset, on='COD_TSE')
 
+        moran_values = []
         p_values = []
 
         for year in years:
@@ -73,9 +73,14 @@ def make_moran_datasets_and_plots():
                 'starting to calculate global moran\'s index for {} at {}'.format(party, year))
 
             moran = Moran(merged_mesh[year], weights)
+            moran_values.append(moran.I)
             p_values.append(moran.p_sim)
 
-            fig, _ = plot_moran(moran, zstandard=True, figsize=(10, 4))
+            fig, ax = plot_moran(moran, zstandard=True, figsize=(10, 4))
+            ax[0].set_title('Distribuição referência')
+            ax[1].set_title(
+                f'Gráfico de disperção de Moran ({round(moran.I, 2)})')
+            ax[1].set_ylabel(None)
             fig.suptitle(f'{party}, {year}')
 
             plots_year_dir = Path(plots_global_dir, str(year)).resolve()
@@ -92,7 +97,10 @@ def make_moran_datasets_and_plots():
 
             local_moran = Moran_Local(merged_mesh[year], weights)
 
-            fig, _ = plot_local_autocorrelation(local_moran, merged_mesh, year)
+            fig, ax = plot_local_autocorrelation(
+                local_moran, merged_mesh, year)
+            ax[0].set_title('Gráfico de disperção Moran Local')
+            ax[0].set_ylabel(None)
             fig.suptitle(f'{party}, {year}')
 
             plots_year_dir = Path(plots_local_dir, str(year)).resolve()
@@ -105,8 +113,26 @@ def make_moran_datasets_and_plots():
                 'done calculating local moran\'s index for {} at {}'.format(party, year))
 
         p_value_path = Path(party_dir, 'p_values.csv')
-        p_value_series = Series(p_values, years, name='p_value')
-        p_value_series.to_csv(p_value_path, index=False)
+        p_value_frame = DataFrame({
+            'moran': moran_values,
+            'p_value': p_values
+        }, years)
+        p_value_frame.to_csv(p_value_path, index=False)
+
+        fig = plt.figure()
+        ax = plt.subplot()
+        ax.plot(p_value_frame.moran)
+        ax.set_xticklabels([0, 1994, 1998, 2002, 2006, 2010, 2014, 2018])
+        ax.set_title(f'Índice de Moran e p-valores ({party})')
+        ax.set_frame_on(False)
+        ax.tick_params(axis='both', length=0, labelsize=12)
+        for i in range(p_value_frame.shape[0]):
+            ax.annotate(f'{round(p_value_frame.iloc[i, 0], 3)} ({p_value_frame.iloc[i, 1]})', xy=(
+                i, p_value_frame.iloc[i, 0]))
+        # fig.add_axes(ax)
+        fig_path = Path(plots_party_dir, 'moran_values.pdf').resolve()
+        plt.savefig(fig_path)
+        plt.close(fig)
 
 
 def main():
