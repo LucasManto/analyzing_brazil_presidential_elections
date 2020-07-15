@@ -13,7 +13,7 @@ def make_cluster_dataset():
     logger = logging.getLogger(__name__)
 
     parties = ['PT', 'PSDB']
-    n_clusters_values = [3, 5, 10]
+    n_clusters_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     external_dir = Path(data_dir, 'external').resolve()
 
@@ -50,18 +50,22 @@ def make_cluster_dataset():
         'series': {
             'data_dir': series_dir,
             'plot_dir': plots_series_dir,
+            'name': 'sem latitude e longitude'
         },
         'normalized_lat_lon': {
             'data_dir': lat_lon_dir,
             'plot_dir': plots_lat_lon_dir,
+            'name': 'com latitude e longitude normalizadas'
         },
         'epsg_4326': {
             'data_dir': epsg_4326_dir,
             'plot_dir': plots_epsg_4326_dir,
+            'name': 'com latitude e longitude normalizadas com epsg_4326'
         },
         'epsg_4674': {
             'data_dir': epsg_4674_dir,
             'plot_dir': plots_epsg_4674_dir,
+            'name': 'com latitude e longitude normalizadas com epsg_4674'
         }
     }
 
@@ -84,7 +88,7 @@ def make_cluster_dataset():
                 dataset = dataset.rename(columns={'cod_mun': 'COD_TSE'})
 
                 merged_mesh = mesh.merge(dataset, on='COD_TSE')
-                merged_mesh.plot(column='cluster', cmap='tab10', legend=True, categorical=True, legend_kwds={
+                merged_mesh.plot(column='cluster', cmap='tab20c', legend=True, categorical=True, legend_kwds={
                                  'loc': 'lower right'})
                 plt.axis(False)
 
@@ -92,7 +96,8 @@ def make_cluster_dataset():
                     plot_party_dir, str(n_clusters)).resolve()
                 plot_n_clusters_dir.mkdir(exist_ok=True)
                 file_path = Path(plot_n_clusters_dir, 'map.pdf')
-                plt.suptitle(f'{party}, {data_type}, {n_clusters} clusters')
+                plt.suptitle(
+                    f'{party}, {metadata["name"]}, {n_clusters} grupos')
                 plt.savefig(file_path)
                 plt.close()
 

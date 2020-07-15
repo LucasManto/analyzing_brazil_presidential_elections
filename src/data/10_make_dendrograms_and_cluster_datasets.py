@@ -82,7 +82,7 @@ def make_dendrograms_and_cluster_datasets():
         }
     }
 
-    n_clusters_values = [3, 5, 10]
+    n_clusters_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     for data_type, metadata in metadata_by_type.items():
         data_type_dir = Path(cluster_dir, data_type).resolve()
         data_type_dir.mkdir(exist_ok=True)
