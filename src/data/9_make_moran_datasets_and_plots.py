@@ -41,7 +41,7 @@ def make_moran_datasets_and_plots():
     moran_dir = Path(data_dir, 'processed', 'moran').resolve()
     moran_dir.mkdir(exist_ok=True)
 
-    moran_plots_dir = Path(reports_dir, 'moran').resolve()
+    moran_plots_dir = Path(project_dir, '..', 'reports', 'moran').resolve()
     moran_plots_dir.mkdir(exist_ok=True)
     for party in parties:
         file_path = Path(series_dir, party, 'series.csv').resolve()
@@ -79,7 +79,7 @@ def make_moran_datasets_and_plots():
             fig, ax = plot_moran(moran, zstandard=True, figsize=(10, 4))
             ax[0].set_title('Distribuição referência')
             ax[1].set_title(
-                f'Gráfico de disperção de Moran ({round(moran.I, 2)})')
+                f'Gráfico de dispersão de Moran ({round(moran.I, 2)})')
             ax[1].set_ylabel(None)
             fig.suptitle(f'{party}, {year}')
 
@@ -99,7 +99,7 @@ def make_moran_datasets_and_plots():
 
             fig, ax = plot_local_autocorrelation(
                 local_moran, merged_mesh, year)
-            ax[0].set_title('Gráfico de disperção Moran Local')
+            ax[0].set_title('Gráfico de dispersão Moran Local')
             ax[0].set_ylabel(None)
             fig.suptitle(f'{party}, {year}')
 
