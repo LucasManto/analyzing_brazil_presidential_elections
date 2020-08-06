@@ -79,6 +79,18 @@ cluster_data: normalized_latlon_data epsg_4674_latlon_data epsg_4326_latlon_data
 cluster_plots: cluster_data
 	$(PYTHON_INTERPRETER) src/data/11_make_cluster_plots.py
 
+## Make Moran's Index dataset and plots with HDI data
+moran_hdi:
+	$(PYTHON_INTERPRETER) src/data/12_make_hdi_moran_datasets_and_plots.py
+
+## Make hierarchical clustering
+cluster_hdi_data:
+	$(PYTHON_INTERPRETER) src/data/13_make_hdi_dendrograms_and_cluster_datasets.py
+
+## Make plots using hierarchical clustering
+cluster_hdi_plots: cluster_hdi_data
+	$(PYTHON_INTERPRETER) src/data/14_make_hdi_cluster_plots.py
+
 ## Make final dataset without interims
 data:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py

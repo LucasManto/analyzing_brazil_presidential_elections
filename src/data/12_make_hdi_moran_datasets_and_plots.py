@@ -1,0 +1,145 @@
+# -*- coding: utf-8 -*-
+import logging
+from pathlib import Path
+
+from pandas import read_csv, read_excel, DataFrame
+from geopandas import read_file
+
+from libpysal.weights import Queen
+from esda import Moran, Moran_Local
+
+from splot.esda import plot_moran, plot_local_autocorrelation
+import matplotlib.pyplot as plt
+
+
+def make_moran_datasets_and_plots():
+    logger = logging.getLogger(__name__)
+
+    external_dir = Path(data_dir, 'external').resolve()
+    raw_dir = Path(data_dir, 'raw').resolve()
+    reports_dir = Path(project_dir, 'reports').resolve()
+
+    mesh_path = Path(external_dir, 'cities.json')
+    mesh = read_file(mesh_path)
+
+    mesh.CD_GEOCMU = mesh.CD_GEOCMU.astype(int)
+    mesh = mesh.sort_index()
+
+    years = [1991, 2000, 2010]
+
+    moran_dir = Path(data_dir, 'processed', 'moran_hdi').resolve()
+    moran_dir.mkdir(exist_ok=True)
+
+    moran_plots_dir = Path(reports_dir, 'moran_hdi').resolve()
+    moran_plots_dir.mkdir(exist_ok=True)
+
+    file_path = Path(raw_dir, 'hdi.xlsx').resolve()
+    dataset = read_excel(file_path, encoding='latin', sep=';')
+    dataset = dataset.rename(columns={'Código': 'CD_GEOCMU'})
+    dataset.CD_GEOCMU = dataset.CD_GEOCMU.astype(int)
+
+    plots_global_dir = Path(moran_plots_dir, 'global').resolve()
+    plots_global_dir.mkdir(exist_ok=True)
+    plots_local_dir = Path(moran_plots_dir, 'local').resolve()
+    plots_local_dir.mkdir(exist_ok=True)
+
+    dataset.columns = ['CD_GEOCMU', 'Espacialidades'] + years
+    merged_mesh = mesh.merge(dataset, on='CD_GEOCMU')
+
+    logger.info('starting to calculate weights...')
+    weights = Queen.from_dataframe(merged_mesh)
+    logger.info(
+        f'done calculating weights')
+
+    moran_values = []
+    p_values = []
+
+    for year in years:
+        logger.info(
+            'starting to calculate global moran\'s index at {}'.format(year))
+
+        moran = Moran(merged_mesh[year], weights)
+        moran_values.append(moran.I)
+        p_values.append(moran.p_sim)
+
+        fig, ax = plot_moran(moran, zstandard=True, figsize=(10, 4))
+        ax[0].set_title('Distribuição referência')
+        ax[1].set_title(
+            f'Gráfico de dispersão de Moran ({round(moran.I, 2)})')
+        ax[1].set_ylabel(None)
+        fig.suptitle(f'{year}')
+
+        plots_year_dir = Path(plots_global_dir, str(year)).resolve()
+        plots_year_dir.mkdir(exist_ok=True)
+        file_path = Path(plots_year_dir, 'global.pdf').resolve()
+        fig.savefig(file_path)
+        plt.close(fig)
+
+        logger.info(
+            'done calculating global moran\'s index at {}'.format(year))
+
+        logger.info(
+            'starting to calculate local moran\'s index at {}'.format(year))
+
+        local_moran = Moran_Local(merged_mesh[year], weights)
+
+        fig, ax = plot_local_autocorrelation(
+            local_moran, merged_mesh, year)
+        ax[0].set_title('Gráfico de dispersão Moran Local')
+        ax[0].set_ylabel(None)
+        fig.suptitle(f'{year}')
+
+        plots_year_dir = Path(plots_local_dir, str(year)).resolve()
+        plots_year_dir.mkdir(exist_ok=True)
+        file_path = Path(plots_year_dir, 'local.pdf').resolve()
+        fig.savefig(file_path)
+        plt.close(fig)
+
+        logger.info(
+            'done calculating local moran\'s index at {}'.format(year))
+
+    p_value_path = Path(moran_dir, 'p_values.csv')
+    p_value_frame = DataFrame({
+        'moran': moran_values,
+        'p_value': p_values
+    }, years)
+    p_value_frame.to_csv(p_value_path, index=False)
+
+    fig = plt.figure()
+    ax = plt.subplot()
+    ax.plot(p_value_frame.moran)
+    ax.set_xticklabels([0] + years)
+    ax.set_title(f'Índice de Moran e p-valores')
+    ax.set_frame_on(False)
+    ax.tick_params(axis='both', length=0, labelsize=12)
+    for i in range(p_value_frame.shape[0]):
+        ax.annotate(f'{round(p_value_frame.iloc[i, 0], 3)} ({p_value_frame.iloc[i, 1]})', xy=(
+            i, p_value_frame.iloc[i, 0]))
+    # fig.add_axes(ax)
+    fig_path = Path(moran_plots_dir, 'moran_values.pdf').resolve()
+    plt.savefig(fig_path)
+    plt.close(fig)
+
+
+def main():
+    """ Runs data processing scripts to turn brazil voting data from (../interim) into
+        presidential data (saved in ../interim/presidential).
+    """
+    logger = logging.getLogger(__name__)
+
+    logger.info(
+        'using series data to make moran dataset... Saving at ../reports/moran_hdi')
+    make_moran_datasets_and_plots()
+    logger.info(
+        'done making moran dataset... Saved at ../reports/moran_hdi')
+
+
+if __name__ == '__main__':
+    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    project_dir = Path(__file__).resolve().parents[2]
+    data_dir = Path(project_dir, 'data').resolve()
+    reports_dir = Path(project_dir, 'reports').resolve()
+
+    main()
