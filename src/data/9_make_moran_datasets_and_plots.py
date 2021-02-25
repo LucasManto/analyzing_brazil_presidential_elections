@@ -41,7 +41,7 @@ def make_moran_datasets_and_plots():
     moran_dir = Path(data_dir, 'processed', 'moran').resolve()
     moran_dir.mkdir(exist_ok=True)
 
-    moran_plots_dir = Path(project_dir, '..', 'reports', 'moran').resolve()
+    moran_plots_dir = Path(project_dir, 'reports', 'moran').resolve()
     moran_plots_dir.mkdir(exist_ok=True)
     for party in parties:
         file_path = Path(series_dir, party, 'series.csv').resolve()
