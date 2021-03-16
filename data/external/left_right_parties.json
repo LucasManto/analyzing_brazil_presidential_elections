@@ -1,0 +1,4 @@
+{
+	"left": ["CID", "PPS", "PSB", "PDT", "PCDOB", "PCB", "PT", "PSOL"],
+	"right": ["DEM", "PFL", "PP", "PPB", "PPR", "PSDB", "PL", "PR", "PSD", "MDB", "PMDB", "PTB", "PV", "PSL"]
+}

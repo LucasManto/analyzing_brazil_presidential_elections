@@ -7,6 +7,7 @@ from pandas import read_csv, concat, Series
 from geopandas import read_file
 
 from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
 def make_cluster_dataset():
@@ -14,6 +15,10 @@ def make_cluster_dataset():
 
     parties = ['PT', 'PSDB']
     n_clusters_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    cmap_left = LinearSegmentedColormap.from_list("cmap", ["#ED979E", "#DA5552"])
+    cmap_right = LinearSegmentedColormap.from_list("cmap", ["#C2DBF0", "#097FC0"])
+    cmaps = [cmap_left, cmap_right]
 
     external_dir = Path(data_dir, 'external').resolve()
 
@@ -73,7 +78,7 @@ def make_cluster_dataset():
         data_type_dir = metadata['data_dir']
         plot_data_type_dir = metadata['plot_dir']
 
-        for party in parties:
+        for index, party in enumerate(parties):
             party_dir = Path(data_type_dir, party).resolve()
             plot_party_dir = Path(plot_data_type_dir, party).resolve()
             plot_party_dir.mkdir(exist_ok=True)
@@ -88,14 +93,14 @@ def make_cluster_dataset():
                 dataset = dataset.rename(columns={'cod_mun': 'COD_TSE'})
 
                 merged_mesh = mesh.merge(dataset, on='COD_TSE')
-                merged_mesh.plot(column='cluster', cmap='tab20c', legend=True, categorical=True, legend_kwds={
+                merged_mesh.plot(column='cluster', cmap=cmaps[index], legend=True, categorical=True, legend_kwds={
                                  'loc': 'lower right'})
                 plt.axis(False)
 
                 plot_n_clusters_dir = Path(
                     plot_party_dir, str(n_clusters)).resolve()
                 plot_n_clusters_dir.mkdir(exist_ok=True)
-                file_path = Path(plot_n_clusters_dir, 'map.pdf')
+                file_path = Path(plot_n_clusters_dir, f'{party}-map-{n_clusters}.png')
                 plt.suptitle(
                     f'{party}, {metadata["name"]}, {n_clusters} grupos')
                 plt.savefig(file_path)

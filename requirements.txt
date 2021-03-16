@@ -17,3 +17,5 @@ libpysal==4.2
 esda==2.2.1
 splot
 scipy
+matplotlib
+sklearn

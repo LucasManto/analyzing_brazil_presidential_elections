@@ -79,6 +79,44 @@ cluster_data: normalized_latlon_data epsg_4674_latlon_data epsg_4326_latlon_data
 cluster_plots: cluster_data
 	$(PYTHON_INTERPRETER) src/data/11_make_cluster_plots.py
 
+## Make brazil congressman complete dataset: result of joining states raw data by year
+brazil_congressman_data: requirements
+	$(PYTHON_INTERPRETER) src/data/15_make_brazil_congressman_dataset
+
+## Make presidential dataset: result of filtering brazil dataset to retrieve
+## only presidential votes
+congressman_data: brazil_congressman_data
+	$(PYTHON_INTERPRETER) src/data/16_make_congressmen_dataset.py
+
+## Make dataset with 1st turn votes and only regular votes: no transit votes, no
+## outside Brazil votes.
+first_turn_congressman_data: congressman_data
+	$(PYTHON_INTERPRETER) src/data/17_make_first_turn_congressman_dataset.py
+
+## Make percentual votes dataset
+percentual_congressman_data: first_turn_congressman_data
+	$(PYTHON_INTERPRETER) src/data/18_make_percentual_congressman_dataset.py
+
+## Make datasets of chosen parties with cod_mun and percentual_votos columns
+parties_congressman_data: percentual_congressman_data
+	$(PYTHON_INTERPRETER) src/data/19_make_parties_congressman_dataset.py
+
+## Make series data joining years data by party
+series_congressman_data: parties_congressman_data
+	$(PYTHON_INTERPRETER) src/data/20_make_series_congressman_dataset.py
+
+## Make Moran's Index dataset
+moran_congressman: series_congressman_data
+	$(PYTHON_INTERPRETER) src/data/21_make_moran_congressman_datasets_and_plots.py
+
+## Make hierarchical clustering
+cluster_congressman_data: series_congressman_data
+	$(PYTHON_INTERPRETER) src/data/22_make_congressman_dendrograms_and_cluster_datasets.py
+
+## Make plots using hierarchical clustering
+cluster_plots: cluster_congressman_data
+	$(PYTHON_INTERPRETER) src/data/23_make_congressman_cluster_plots.py
+
 ## Make Moran's Index dataset and plots with HDI data
 moran_hdi:
 	$(PYTHON_INTERPRETER) src/data/12_make_hdi_moran_datasets_and_plots.py

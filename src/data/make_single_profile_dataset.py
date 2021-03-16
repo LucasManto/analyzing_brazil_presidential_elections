@@ -13,9 +13,9 @@ def remove_accent(text):
 def make_single_profile_dataset():
     profiles_dir = Path(data_dir, 'processed', 'profiles').resolve()
     metadata_by_year = {
-        1994: {
-            'columns_to_calculate': []
-        },
+        # 1994: {
+        #     'columns_to_calculate': []
+        # },
         1998: {
             'columns_to_calculate': []
         },

@@ -29,11 +29,11 @@ def make_profile_dataset():
     columns_to_use = ['CD_MUNICIPIO', 'DS_GENERO',
                       'DS_FAIXA_ETARIA', 'DS_GRAU_ESCOLARIDADE', 'QT_ELEITORES_PERFIL']
     metadata_by_year = {
-        1994: {
-            'file_extension': 'txt',
-            'columns': columns_pre_2018,
-            'header': None
-        },
+        # 1994: {
+        #     'file_extension': 'txt',
+        #     'columns': columns_pre_2018,
+        #     'header': None
+        # },
         1998: {
             'file_extension': 'txt',
             'columns': columns_pre_2018,
@@ -82,8 +82,8 @@ def make_profile_dataset():
         dataset.loc[:, object_df.columns] = object_df.apply(
             lambda column: column.str.strip().str.replace(' ', '_').str.upper())
 
-        dataset = get_dummies(dataset).groupby('CD_MUNICIPIO').apply(lambda group: group.apply(lambda column: (
-            column * group.QT_ELEITORES_PERFIL).sum() if column.name != 'QT_ELEITORES_PERFIL' else column.sum()))
+        dataset = get_dummies(dataset).groupby('CD_MUNICIPIO').apply(lambda group: group.apply(lambda column: ((
+            column * group.QT_ELEITORES_PERFIL).sum() / group.QT_ELEITORES_PERFIL.sum()) if column.name != 'QT_ELEITORES_PERFIL' else column.sum()))
 
         dataset = dataset.drop(columns='CD_MUNICIPIO')
         dataset = dataset.loc[dataset.index.intersection(correspondence.index)]
